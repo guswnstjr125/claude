@@ -2,8 +2,9 @@
 html, body { margin: 0; background: #faf8ef; color: #776e65; font-family: system-ui, -apple-system, sans-serif; }
 .page { max-width: 480px; margin: 0 auto; padding: 16px; }
 h1 { font-size: 1.6rem; text-align: center; }
-button { font: inherit; border: 0; border-radius: 8px; padding: 10px 16px; background: #8f7a66; color: #fff; font-weight: 700; cursor: pointer; }
-.back { background: transparent; color: #776e65; padding: 4px 0; }
+button, a.card { font: inherit; border: 0; border-radius: 8px; padding: 10px 16px; background: #8f7a66; color: #fff; font-weight: 700; cursor: pointer; }
+a.card { text-decoration: none; }
+.back { display: inline-block; background: transparent; color: #776e65; padding: 4px 0; font-weight: 700; text-decoration: none; }
 .menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 .card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 24px 8px; font-size: 1.1rem; }
 .emoji { font-size: 2.4rem; }
