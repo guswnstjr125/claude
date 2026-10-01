@@ -13,7 +13,7 @@ const popcount = (x: number) => {
   return c
 }
 
-const shuffle = <T,>(a: T[]): T[] => {
+export const shuffle = <T,>(a: T[]): T[] => {
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
     ;[a[i], a[j]] = [a[j], a[i]]
@@ -76,8 +76,7 @@ function solve(grid: number[], n: number, box: number, limit: number, randomize:
   return count
 }
 
-export function generate(size: Size, difficulty: Difficulty, budgetMs = 1200) {
-  const n = size
+export function randomSolution(n: number): number[] {
   const box = Math.sqrt(n)
   const solution = new Array(n * n).fill(0)
   // 대각선 박스를 먼저 채워 무작위성 확보
@@ -87,6 +86,13 @@ export function generate(size: Size, difficulty: Difficulty, budgetMs = 1200) {
       for (let j = 0; j < box; j++) solution[(b * box + i) * n + b * box + j] = nums[i * box + j]
   }
   solve(solution, n, box, 1, true)
+  return solution
+}
+
+export function generate(size: Size, difficulty: Difficulty, budgetMs = 1200) {
+  const n = size
+  const box = Math.sqrt(n)
+  const solution = randomSolution(n)
 
   const puzzle = [...solution]
   const target = CLUES[size][difficulty]

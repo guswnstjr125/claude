@@ -2,8 +2,11 @@ import { useState } from 'react'
 import Game2048 from './games/Game2048'
 import Sudoku from './games/Sudoku'
 
+const KillerSudoku = () => <Sudoku killer />
+
 const games = [{ id: '2048', name: '2048', emoji: '🔢', component: Game2048 },
   { id: 'sudoku', name: '스도쿠', emoji: '🧩', component: Sudoku },
+  { id: 'killer', name: '킬러 스도쿠', emoji: '🗡️', component: KillerSudoku },
 ]
 
 export default function App() {

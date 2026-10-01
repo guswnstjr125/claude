@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CLUES, generate, label, type Difficulty, type Size } from './sudoku/logic'
+import { generateKiller, type Cage } from './sudoku/killer'
 
 const DIFFS: { id: Difficulty; name: string }[] = [
   { id: 'easy', name: '쉬움' },
@@ -7,7 +8,7 @@ const DIFFS: { id: Difficulty; name: string }[] = [
   { id: 'hard', name: '어려움' },
 ]
 
-type Game = { puzzle: number[]; solution: number[] }
+type Game = { puzzle: number[]; solution: number[]; cages?: Cage[]; cageOf?: number[] }
 
 const peerOf = (a: number, b: number, n: number, box: number) => {
   const ar = Math.floor(a / n), ac = a % n, br = Math.floor(b / n), bc = b % n
@@ -17,7 +18,7 @@ const peerOf = (a: number, b: number, n: number, box: number) => {
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 
-export default function Sudoku() {
+export default function Sudoku({ killer = false }: { killer?: boolean }) {
   const [size, setSize] = useState<Size>(9)
   const [diff, setDiff] = useState<Difficulty>('easy')
   const [game, setGame] = useState<Game | null>(null)
@@ -36,7 +37,7 @@ export default function Sudoku() {
     setGame(null)
     // 생성 중 "만드는 중..." 문구가 먼저 그려지도록 한 박자 늦춘다
     setTimeout(() => {
-      const g = generate(s, d)
+      const g: Game = killer ? generateKiller(d) : generate(s, d)
       setGame(g)
       setValues([...g.puzzle])
       setNotes(new Array(s * s).fill(0))
@@ -44,7 +45,7 @@ export default function Sudoku() {
       setSecs(0)
       setLoading(false)
     }, 30)
-  }, [])
+  }, [killer])
 
   useEffect(() => { start(9, 'easy') }, [start])
 
@@ -106,18 +107,35 @@ export default function Sudoku() {
     return c
   }, [values, n])
 
+  const cageBox = (i: number) => {
+    if (!game?.cageOf || !game.cages) return null
+    const cg = game.cageOf[i]
+    const edge = (j: number, outside: boolean) => outside || game.cageOf![j] !== cg
+    const r = Math.floor(i / n), c = i % n
+    const top = edge(i - n, r === 0), bottom = edge(i + n, r === n - 1)
+    const left = edge(i - 1, c === 0), right = edge(i + 1, c === n - 1)
+    const cage = game.cages[cg]
+    const first = Math.min(...cage.cells) === i
+    return (
+      <>
+        <span className={`cage ${top ? 'ct' : ''} ${bottom ? 'cb' : ''} ${left ? 'cl' : ''} ${right ? 'cr' : ''}`} />
+        {first && <span className="csum">{cage.sum}</span>}
+      </>
+    )
+  }
+
   const selVal = sel !== null ? values[sel] : 0
   const peer = (i: number) => sel !== null && peerOf(sel, i, n, box)
 
   return (
-    <div className={`sudoku s${n}`}>
-      <div className="sd-row">
+    <div className={`sudoku s${n} ${killer ? 'killer' : ''}`}>
+      {!killer && <div className="sd-row">
         {([9, 16] as Size[]).map((s) => (
           <button key={s} className={`seg ${size === s ? 'on' : ''}`} onClick={() => changeSize(s)}>
             {s}×{s}
           </button>
         ))}
-      </div>
+      </div>}
       <div className="sd-row">
         {DIFFS.map((d) => (
           <button key={d.id} className={`seg ${diff === d.id ? 'on' : ''}`} onClick={() => changeDiff(d.id)}>
@@ -127,7 +145,7 @@ export default function Sudoku() {
       </div>
       <div className="sd-info">
         <span>⏱ {fmt(secs)}</span>
-        <span>힌트 {CLUES[size][diff]}개</span>
+        <span>{killer ? `케이지 ${game?.cages?.length ?? '-'}개` : `힌트 ${CLUES[size][diff]}개`}</span>
         <button className="small" onClick={() => start(size, diff)}>새 게임</button>
       </div>
 
@@ -149,6 +167,7 @@ export default function Sudoku() {
             ].join(' ')
             return (
               <div key={i} className={cls} onClick={() => setSel(i)}>
+                {cageBox(i)}
                 {v ? label(v) : notes[i] ? (
                   <div className="notes" style={{ gridTemplateColumns: `repeat(${box}, 1fr)` }}>
                     {Array.from({ length: n }, (_, k) => (

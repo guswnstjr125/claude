@@ -58,3 +58,11 @@ button { font: inherit; border: 0; border-radius: 8px; padding: 10px 16px; backg
 .sd-pad .memo { grid-column: span 2; background: #b5a899; font-size: .85rem; }
 .sd-pad .memo.on { background: #3b7dd8; }
 .sd-pad button.noted { background: #3b7dd8; }
+
+/* 킬러 스도쿠 */
+.sd-cell { position: relative; }
+.cage { position: absolute; inset: 2px; pointer-events: none; border: 0 dashed #6b645d; }
+.cage.ct { border-top-width: 1px; } .cage.cb { border-bottom-width: 1px; }
+.cage.cl { border-left-width: 1px; } .cage.cr { border-right-width: 1px; }
+.csum { position: absolute; top: 3px; left: 4px; font-size: .55rem; line-height: 1; font-weight: 700; color: #5b544d; pointer-events: none; background: inherit; padding-right: 1px; }
+.killer .notes { padding-top: .75rem; }
