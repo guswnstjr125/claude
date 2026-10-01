@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import Game2048 from './games/Game2048'
+import Sudoku from './games/Sudoku'
 
-const games = [{ id: '2048', name: '2048', emoji: '🔢', component: Game2048 }]
+const games = [{ id: '2048', name: '2048', emoji: '🔢', component: Game2048 },
+  { id: 'sudoku', name: '스도쿠', emoji: '🧩', component: Sudoku },
+]
 
 export default function App() {
   const [current, setCurrent] = useState<string | null>(null)

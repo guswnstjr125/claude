@@ -21,3 +21,29 @@ button { font: inherit; border: 0; border-radius: 8px; padding: 10px 16px; backg
 .overlay { position: absolute; inset: 0; border-radius: 10px; background: rgba(238, 228, 218, .8); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-size: 1.6rem; font-weight: 800; }
 .overlay p { margin: 0; }
 .hint { text-align: center; font-size: .8rem; opacity: .7; }
+
+/* 스도쿠 */
+.sudoku { display: flex; flex-direction: column; gap: 10px; }
+.sd-row { display: flex; gap: 6px; }
+.seg { flex: 1; background: #d8cfc4; color: #776e65; padding: 8px 4px; }
+.seg.on { background: #8f7a66; color: #fff; }
+.sd-info { display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: .9rem; }
+.small { padding: 6px 12px; font-size: .85rem; }
+.sd-loading { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: #bbada0; border-radius: 8px; color: #fff; font-weight: 700; }
+.sd-board { display: grid; border: 2px solid #4a423b; background: #fff; aspect-ratio: 1; user-select: none; }
+.sd-cell { display: flex; align-items: center; justify-content: center; border: 1px solid #d8d0c6; font-size: clamp(.9rem, 5vw, 1.4rem); color: #3b7dd8; cursor: pointer; font-weight: 600; }
+.s16 .sd-cell { font-size: clamp(.55rem, 3vw, .95rem); }
+.sd-cell.given { color: #3b3530; font-weight: 800; background: #f3eee7; }
+.sd-cell.peer { background: #ece6dd; }
+.sd-cell.given.peer { background: #e4ddd2; }
+.sd-cell.same { background: #cfe3fa; }
+.sd-cell.sel { background: #ffe08a; }
+.sd-cell.wrong { color: #d93a3a; background: #fbdcdc; }
+.sd-cell.br { border-right: 2px solid #4a423b; }
+.sd-cell.bb { border-bottom: 2px solid #4a423b; }
+.sd-pad { display: grid; gap: 6px; }
+.sd-pad button { padding: 10px 0; font-size: 1.1rem; background: #8f7a66; }
+.sd-pad button.done { opacity: .3; }
+.sd-pad .erase { background: #b5a899; font-size: .85rem; }
+.sd-win { text-align: center; font-weight: 800; font-size: 1.2rem; background: #ffe08a; border-radius: 8px; padding: 10px; }
+.s16 .sd-pad .erase { grid-column: 1 / -1; }
