@@ -70,7 +70,7 @@ export default function Sudoku({ killer = false }: { killer?: boolean }) {
   }, [game, solved])
 
   const input = useCallback((v: number) => {
-    if (!game || sel === null || game.puzzle[sel] || solved) return
+    if (!game || sel === null || game.puzzle[sel] || hinted[sel] || solved) return // 힌트로 채운 칸은 잠금
     if (v === 0) {
       setValues((prev) => prev.map((x, i) => (i === sel ? 0 : x)))
       setNotes((prev) => prev.map((m, i) => (i === sel ? 0 : m)))
@@ -85,7 +85,7 @@ export default function Sudoku({ killer = false }: { killer?: boolean }) {
     // 확정한 칸의 메모는 비우고, 같은 줄/열/박스의 같은 숫자 메모는 지운다
     setNotes((prev) => prev.map((m, i) =>
       i === sel ? 0 : peerOf(sel, i, n, box) ? m & ~(1 << (v - 1)) : m))
-  }, [game, sel, solved, memo, values, n, box])
+  }, [game, sel, solved, memo, values, hinted, n, box])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -229,6 +229,7 @@ export default function Sudoku({ killer = false }: { killer?: boolean }) {
         <button className="erase" onClick={() => input(0)}>지우기</button>
         <button className="hintbtn" onClick={hint}>💡 힌트{hintCount ? ` (${hintCount})` : ''}</button>
       </div>
+      <p className="hint build">빌드 {__BUILD__}</p>
       <p className="hint">칸을 누르고 숫자를 고르세요. 메모 ON이면 후보 숫자를 작게 적어요. 틀린 숫자는 빨간색으로 표시돼요.</p>
     </div>
   )

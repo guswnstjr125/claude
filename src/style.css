@@ -77,3 +77,4 @@ button { font: inherit; border: 0; border-radius: 8px; padding: 10px 16px; backg
 /* 킬러: 난이도 6개를 3개씩 두 줄로 */
 .sd-row.wrap { flex-wrap: wrap; }
 .sd-row.wrap .seg { flex: 1 1 30%; }
+.hint.build { margin: 4px 0 0; opacity: .45; font-size: .7rem; }
