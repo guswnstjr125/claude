@@ -9,6 +9,12 @@ const DIFFS: { id: Difficulty; name: string }[] = [
 
 type Game = { puzzle: number[]; solution: number[] }
 
+const peerOf = (a: number, b: number, n: number, box: number) => {
+  const ar = Math.floor(a / n), ac = a % n, br = Math.floor(b / n), bc = b % n
+  return ar === br || ac === bc ||
+    (Math.floor(ar / box) === Math.floor(br / box) && Math.floor(ac / box) === Math.floor(bc / box))
+}
+
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 
 export default function Sudoku() {
@@ -17,6 +23,8 @@ export default function Sudoku() {
   const [game, setGame] = useState<Game | null>(null)
   const [values, setValues] = useState<number[]>([])
   const [sel, setSel] = useState<number | null>(null)
+  const [notes, setNotes] = useState<number[]>([]) // 칸마다 후보 숫자 비트마스크
+  const [memo, setMemo] = useState(false)
   const [secs, setSecs] = useState(0)
   const [loading, setLoading] = useState(false)
 
@@ -31,6 +39,7 @@ export default function Sudoku() {
       const g = generate(s, d)
       setGame(g)
       setValues([...g.puzzle])
+      setNotes(new Array(s * s).fill(0))
       setSel(null)
       setSecs(0)
       setLoading(false)
@@ -49,11 +58,25 @@ export default function Sudoku() {
 
   const input = useCallback((v: number) => {
     if (!game || sel === null || game.puzzle[sel] || solved) return
+    if (v === 0) {
+      setValues((prev) => prev.map((x, i) => (i === sel ? 0 : x)))
+      setNotes((prev) => prev.map((m, i) => (i === sel ? 0 : m)))
+      return
+    }
+    if (memo) {
+      if (values[sel]) return // 숫자가 있는 칸엔 메모 불가
+      setNotes((prev) => prev.map((m, i) => (i === sel ? m ^ (1 << (v - 1)) : m)))
+      return
+    }
     setValues((prev) => prev.map((x, i) => (i === sel ? v : x)))
-  }, [game, sel, solved])
+    // 확정한 칸의 메모는 비우고, 같은 줄/열/박스의 같은 숫자 메모는 지운다
+    setNotes((prev) => prev.map((m, i) =>
+      i === sel ? 0 : peerOf(sel, i, n, box) ? m & ~(1 << (v - 1)) : m))
+  }, [game, sel, solved, memo, values, n, box])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.key.toUpperCase() === 'M') return setMemo((m) => !m)
       if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') return input(0)
       if (sel !== null) {
         const d: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -n, ArrowDown: n }
@@ -84,12 +107,7 @@ export default function Sudoku() {
   }, [values, n])
 
   const selVal = sel !== null ? values[sel] : 0
-  const peer = (i: number) => {
-    if (sel === null) return false
-    const r = Math.floor(i / n), c = i % n, sr = Math.floor(sel / n), sc = sel % n
-    return r === sr || c === sc ||
-      (Math.floor(r / box) === Math.floor(sr / box) && Math.floor(c / box) === Math.floor(sc / box))
-  }
+  const peer = (i: number) => sel !== null && peerOf(sel, i, n, box)
 
   return (
     <div className={`sudoku s${n}`}>
@@ -130,7 +148,17 @@ export default function Sudoku() {
               (Math.floor(i / n) % box) === box - 1 && Math.floor(i / n) !== n - 1 ? 'bb' : '',
             ].join(' ')
             return (
-              <div key={i} className={cls} onClick={() => setSel(i)}>{label(v)}</div>
+              <div key={i} className={cls} onClick={() => setSel(i)}>
+                {v ? label(v) : notes[i] ? (
+                  <div className="notes" style={{ gridTemplateColumns: `repeat(${box}, 1fr)` }}>
+                    {Array.from({ length: n }, (_, k) => (
+                      <span key={k} className={selVal === k + 1 ? 'hl' : ''}>
+                        {notes[i] & (1 << k) ? label(k + 1) : ''}
+                      </span>
+                    ))}
+                  </div>
+                ) : ''}
+              </div>
             )
           })}
         </div>
@@ -140,13 +168,16 @@ export default function Sudoku() {
 
       <div className="sd-pad" style={{ gridTemplateColumns: `repeat(${n === 9 ? 5 : 8}, 1fr)` }}>
         {Array.from({ length: n }, (_, i) => i + 1).map((v) => (
-          <button key={v} className={counts[v] >= n ? 'done' : ''} onClick={() => input(v)}>
+          <button key={v} className={[counts[v] >= n ? 'done' : '', memo && sel !== null && notes[sel] & (1 << (v - 1)) ? 'noted' : ''].join(' ')} onClick={() => input(v)}>
             {label(v)}
           </button>
         ))}
+        <button className={`memo ${memo ? 'on' : ''}`} onClick={() => setMemo((m) => !m)}>
+          ✏️ 메모 {memo ? 'ON' : 'OFF'}
+        </button>
         <button className="erase" onClick={() => input(0)}>지우기</button>
       </div>
-      <p className="hint">칸을 누르고 숫자를 고르세요. 틀린 숫자는 빨간색으로 표시돼요.</p>
+      <p className="hint">칸을 누르고 숫자를 고르세요. 메모 ON이면 후보 숫자를 작게 적어요. 틀린 숫자는 빨간색으로 표시돼요.</p>
     </div>
   )
 }

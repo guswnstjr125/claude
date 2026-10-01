@@ -46,4 +46,15 @@ button { font: inherit; border: 0; border-radius: 8px; padding: 10px 16px; backg
 .sd-pad button.done { opacity: .3; }
 .sd-pad .erase { background: #b5a899; font-size: .85rem; }
 .sd-win { text-align: center; font-weight: 800; font-size: 1.2rem; background: #ffe08a; border-radius: 8px; padding: 10px; }
-.s16 .sd-pad .erase { grid-column: 1 / -1; }
+.s16 .sd-pad .erase { grid-column: span 4; }
+.s16 .sd-pad .memo { grid-column: span 4; }
+
+/* 스도쿠 메모 */
+.notes { display: grid; width: 100%; height: 100%; padding: 1px; font-size: .5rem; line-height: 1; font-weight: 600; color: #6b645d; }
+.notes span { display: flex; align-items: center; justify-content: center; }
+.notes span.hl { color: #fff; background: #3b7dd8; border-radius: 3px; }
+.s9 .notes { font-size: .65rem; }
+.s16 .notes { font-size: .38rem; }
+.sd-pad .memo { grid-column: span 2; background: #b5a899; font-size: .85rem; }
+.sd-pad .memo.on { background: #3b7dd8; }
+.sd-pad button.noted { background: #3b7dd8; }
