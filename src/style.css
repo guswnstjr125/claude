@@ -71,3 +71,7 @@ button { font: inherit; border: 0; border-radius: 8px; padding: 10px 16px; backg
 /* 힌트 */
 .sd-pad .hintbtn { grid-column: span 2; background: #4f9a6a; font-size: .85rem; }
 .sd-cell.hinted { color: #2f8f55; }
+
+/* 킬러: 난이도 6개를 3개씩 두 줄로 */
+.sd-row.wrap { flex-wrap: wrap; }
+.sd-row.wrap .seg { flex: 1 1 30%; }

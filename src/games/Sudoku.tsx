@@ -7,7 +7,14 @@ const DIFFS: { id: KillerDifficulty; name: string }[] = [
   { id: 'medium', name: '보통' },
   { id: 'hard', name: '어려움' },
 ]
-const KILLER_ONLY: { id: KillerDifficulty; name: string }[] = [{ id: 'expert', name: '매우 어려움' }]
+const KILLER_DIFFS: { id: KillerDifficulty; name: string }[] = [
+  { id: 'beginner', name: '입문' },
+  { id: 'easy', name: '쉬움' },
+  { id: 'medium', name: '보통' },
+  { id: 'hard', name: '어려움' },
+  { id: 'expert', name: '매우 어려움' },
+  { id: 'master', name: '극악' },
+]
 
 type Game = { puzzle: number[]; solution: number[]; cages?: Cage[]; cageOf?: number[] }
 
@@ -160,8 +167,8 @@ export default function Sudoku({ killer = false }: { killer?: boolean }) {
           </button>
         ))}
       </div>}
-      <div className="sd-row">
-        {(killer ? [...DIFFS, ...KILLER_ONLY] : DIFFS).map((d) => (
+      <div className={`sd-row ${killer ? 'wrap' : ''}`}>
+        {(killer ? KILLER_DIFFS : DIFFS).map((d) => (
           <button key={d.id} className={`seg ${diff === d.id ? 'on' : ''}`} onClick={() => changeDiff(d.id)}>
             {d.name}
           </button>

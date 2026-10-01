@@ -1,6 +1,6 @@
 import { randomSolution, shuffle, type Difficulty } from './logic'
 
-export type KillerDifficulty = Difficulty | 'expert'
+export type KillerDifficulty = Difficulty | 'beginner' | 'expert' | 'master'
 
 export type Cage = { cells: number[]; sum: number }
 export type KillerPuzzle = {
@@ -28,6 +28,7 @@ const neighbors = (i: number) => {
 }
 
 // 케이지 규칙(합, 중복 금지)을 포함해 해의 개수를 limit개까지 센다. 탐색이 너무 길어지면 limit으로 간주.
+export const stats = { guesses: 0 }
 function countSolutions(given: number[], cages: Cage[], cageOf: number[], limit: number, maxNodes = 60000): number {
   const grid = [...given]
   const rows = new Array(N).fill(0), cols = new Array(N).fill(0), boxes = new Array(N).fill(0)
@@ -63,6 +64,7 @@ function countSolutions(given: number[], cages: Cage[], cageOf: number[], limit:
     }
     if (best === -1) { count++; return count >= limit }
     if (bestCnt === 0) return false
+    if (bestCnt > 1) stats.guesses++
     const r = Math.floor(best / N), c = best % N, b = boxOf(best), cg = cageOf[best]
     for (let v = 1; v <= 9; v++) {
       const bit = 1 << (v - 1)
@@ -81,7 +83,8 @@ function countSolutions(given: number[], cages: Cage[], cageOf: number[], limit:
 }
 
 // 난이도: 케이지 최대 크기와 추가로 공개하는 숫자 개수
-const LEVEL: Record<Difficulty, { maxSize: number; extra: number }> = {
+const LEVEL: Record<Difficulty | 'beginner', { maxSize: number; extra: number }> = {
+  beginner: { maxSize: 2, extra: 24 },
   easy: { maxSize: 3, extra: 12 },
   medium: { maxSize: 4, extra: 4 },
   hard: { maxSize: 5, extra: 0 },
@@ -128,7 +131,10 @@ function makeCages(solution: number[], maxSize: number) {
 }
 
 // 매우 어려움: 주어진 숫자 없이 케이지 합만으로 답이 하나가 되는 퍼즐
-function generateExpert(): KillerPuzzle | null {
+// master(극악)는 더 큰 케이지와 더 오래 합치기로 가장 어렵게 만든다
+function generateExpert(master: boolean): KillerPuzzle | null {
+  const mergeMs = master ? 900 : 400
+  const cap = master ? 6 : 5
   const zero = new Array(N * N).fill(0)
   const t0 = Date.now()
   while (Date.now() - t0 < 2500) {
@@ -139,7 +145,7 @@ function generateExpert(): KillerPuzzle | null {
     // 가능한 만큼 이웃 케이지를 합쳐 더 어렵게 (시간 제한 있음)
     const t1 = Date.now()
     let merged = true
-    while (merged && Date.now() - t1 < 400) {
+    while (merged && Date.now() - t1 < mergeMs) {
       merged = false
       const pairs: [number, number][] = []
       cages.forEach((c, a) => {
@@ -147,9 +153,9 @@ function generateExpert(): KillerPuzzle | null {
         nb.forEach((b) => { if (b > a) pairs.push([a, b]) })
       })
       for (const [a, b] of shuffle(pairs)) {
-        if (Date.now() - t1 > 400) break
+        if (Date.now() - t1 > mergeMs) break
         const cells = [...cages[a].cells, ...cages[b].cells]
-        if (cells.length > 5 || new Set(cells.map((i) => solution[i])).size < cells.length) continue
+        if (cells.length > cap || new Set(cells.map((i) => solution[i])).size < cells.length) continue
         const nc = cages.filter((_, k) => k !== a && k !== b)
         nc.push({ cells, sum: cells.reduce((x, i) => x + solution[i], 0) })
         const no = new Array(N * N).fill(0)
@@ -168,8 +174,8 @@ function generateExpert(): KillerPuzzle | null {
 }
 
 export function generateKiller(difficulty: KillerDifficulty): KillerPuzzle {
-  if (difficulty === 'expert') {
-    const g = generateExpert()
+  if (difficulty === 'expert' || difficulty === 'master') {
+    const g = generateExpert(difficulty === 'master')
     if (g) return g
     difficulty = 'hard' // 시간 안에 못 만들면 어려움으로 대체
   }
