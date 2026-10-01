@@ -183,7 +183,7 @@ export default function Sudoku({ killer = false }: { killer?: boolean }) {
       {loading || !game ? (
         <div className="sd-loading">퍼즐 만드는 중...</div>
       ) : (
-        <div className="sd-board" style={{ gridTemplateColumns: `repeat(${n}, 1fr)` }}>
+        <div className="sd-board" style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${n}, minmax(0, 1fr))` }}>
           {values.map((v, i) => {
             const given = game.puzzle[i] !== 0
             const wrong = !given && v !== 0 && v !== game.solution[i]
