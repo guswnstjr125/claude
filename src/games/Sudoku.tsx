@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CLUES, generate, label, type Difficulty, type Size } from './sudoku/logic'
-import { generateKiller, type Cage } from './sudoku/killer'
+import { generateKiller, type Cage, type KillerDifficulty } from './sudoku/killer'
 
-const DIFFS: { id: Difficulty; name: string }[] = [
+const DIFFS: { id: KillerDifficulty; name: string }[] = [
   { id: 'easy', name: '쉬움' },
   { id: 'medium', name: '보통' },
   { id: 'hard', name: '어려움' },
 ]
+const KILLER_ONLY: { id: KillerDifficulty; name: string }[] = [{ id: 'expert', name: '매우 어려움' }]
 
 type Game = { puzzle: number[]; solution: number[]; cages?: Cage[]; cageOf?: number[] }
 
@@ -20,29 +21,33 @@ const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '
 
 export default function Sudoku({ killer = false }: { killer?: boolean }) {
   const [size, setSize] = useState<Size>(9)
-  const [diff, setDiff] = useState<Difficulty>('easy')
+  const [diff, setDiff] = useState<KillerDifficulty>('easy')
   const [game, setGame] = useState<Game | null>(null)
   const [values, setValues] = useState<number[]>([])
   const [sel, setSel] = useState<number | null>(null)
   const [notes, setNotes] = useState<number[]>([]) // 칸마다 후보 숫자 비트마스크
   const [memo, setMemo] = useState(false)
+  const [hinted, setHinted] = useState<boolean[]>([])
+  const [hintCount, setHintCount] = useState(0)
   const [secs, setSecs] = useState(0)
   const [loading, setLoading] = useState(false)
 
   const n = size
   const box = Math.sqrt(n)
 
-  const start = useCallback((s: Size, d: Difficulty) => {
+  const start = useCallback((s: Size, d: KillerDifficulty) => {
     setLoading(true)
     setGame(null)
     // 생성 중 "만드는 중..." 문구가 먼저 그려지도록 한 박자 늦춘다
     setTimeout(() => {
-      const g: Game = killer ? generateKiller(d) : generate(s, d)
+      const g: Game = killer ? generateKiller(d) : generate(s, d as Difficulty)
       setGame(g)
       setValues([...g.puzzle])
       setNotes(new Array(s * s).fill(0))
       setSel(null)
       setSecs(0)
+      setHinted(new Array(s * s).fill(false))
+      setHintCount(0)
       setLoading(false)
     }, 30)
   }, [killer])
@@ -97,8 +102,27 @@ export default function Sudoku({ killer = false }: { killer?: boolean }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [input, sel, n])
 
+  // 힌트: 선택한 칸(없거나 이미 맞으면 틀리거나 빈 칸 중 하나)의 정답을 채워 준다
+  const hint = () => {
+    if (!game || solved) return
+    const wrongOrEmpty = (i: number) => !game.puzzle[i] && values[i] !== game.solution[i]
+    let target = sel !== null && wrongOrEmpty(sel) ? sel : -1
+    if (target < 0) {
+      const cands = values.map((_, i) => i).filter(wrongOrEmpty)
+      if (!cands.length) return
+      target = cands[Math.floor(Math.random() * cands.length)]
+    }
+    const v = game.solution[target]
+    setValues((prev) => prev.map((x, i) => (i === target ? v : x)))
+    setNotes((prev) => prev.map((m, i) =>
+      i === target ? 0 : peerOf(target, i, n, box) ? m & ~(1 << (v - 1)) : m))
+    setHinted((prev) => prev.map((h, i) => h || i === target))
+    setHintCount((c) => c + 1)
+    setSel(target)
+  }
+
   const changeSize = (s: Size) => { setSize(s); start(s, diff) }
-  const changeDiff = (d: Difficulty) => { setDiff(d); start(size, d) }
+  const changeDiff = (d: KillerDifficulty) => { setDiff(d); start(size, d) }
 
   // 같은 숫자 개수 (다 채운 숫자는 패드에서 흐리게)
   const counts = useMemo(() => {
@@ -137,7 +161,7 @@ export default function Sudoku({ killer = false }: { killer?: boolean }) {
         ))}
       </div>}
       <div className="sd-row">
-        {DIFFS.map((d) => (
+        {(killer ? [...DIFFS, ...KILLER_ONLY] : DIFFS).map((d) => (
           <button key={d.id} className={`seg ${diff === d.id ? 'on' : ''}`} onClick={() => changeDiff(d.id)}>
             {d.name}
           </button>
@@ -145,7 +169,7 @@ export default function Sudoku({ killer = false }: { killer?: boolean }) {
       </div>
       <div className="sd-info">
         <span>⏱ {fmt(secs)}</span>
-        <span>{killer ? `케이지 ${game?.cages?.length ?? '-'}개` : `힌트 ${CLUES[size][diff]}개`}</span>
+        <span>{killer ? `케이지 ${game?.cages?.length ?? '-'}개` : `주어진 숫자 ${CLUES[size][diff as Difficulty]}개`}</span>
         <button className="small" onClick={() => start(size, diff)}>새 게임</button>
       </div>
 
@@ -162,6 +186,7 @@ export default function Sudoku({ killer = false }: { killer?: boolean }) {
               i === sel ? 'sel' : peer(i) ? 'peer' : '',
               v && v === selVal && i !== sel ? 'same' : '',
               wrong ? 'wrong' : '',
+              hinted[i] ? 'hinted' : '',
               (i % n) % box === box - 1 && i % n !== n - 1 ? 'br' : '',
               (Math.floor(i / n) % box) === box - 1 && Math.floor(i / n) !== n - 1 ? 'bb' : '',
             ].join(' ')
@@ -183,7 +208,7 @@ export default function Sudoku({ killer = false }: { killer?: boolean }) {
         </div>
       )}
 
-      {solved && <div className="sd-win">🎉 완성! 기록 {fmt(secs)}</div>}
+      {solved && <div className="sd-win">🎉 완성! 기록 {fmt(secs)}{hintCount ? ` · 힌트 ${hintCount}회` : ''}</div>}
 
       <div className="sd-pad" style={{ gridTemplateColumns: `repeat(${n === 9 ? 5 : 8}, 1fr)` }}>
         {Array.from({ length: n }, (_, i) => i + 1).map((v) => (
@@ -195,6 +220,7 @@ export default function Sudoku({ killer = false }: { killer?: boolean }) {
           ✏️ 메모 {memo ? 'ON' : 'OFF'}
         </button>
         <button className="erase" onClick={() => input(0)}>지우기</button>
+        <button className="hintbtn" onClick={hint}>💡 힌트{hintCount ? ` (${hintCount})` : ''}</button>
       </div>
       <p className="hint">칸을 누르고 숫자를 고르세요. 메모 ON이면 후보 숫자를 작게 적어요. 틀린 숫자는 빨간색으로 표시돼요.</p>
     </div>

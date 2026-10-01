@@ -25,7 +25,7 @@ button { font: inherit; border: 0; border-radius: 8px; padding: 10px 16px; backg
 /* 스도쿠 */
 .sudoku { display: flex; flex-direction: column; gap: 10px; }
 .sd-row { display: flex; gap: 6px; }
-.seg { flex: 1; background: #d8cfc4; color: #776e65; padding: 8px 4px; }
+.seg { flex: 1; white-space: nowrap; font-size: .9rem; background: #d8cfc4; color: #776e65; padding: 8px 2px; }
 .seg.on { background: #8f7a66; color: #fff; }
 .sd-info { display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: .9rem; }
 .small { padding: 6px 12px; font-size: .85rem; }
@@ -46,8 +46,9 @@ button { font: inherit; border: 0; border-radius: 8px; padding: 10px 16px; backg
 .sd-pad button.done { opacity: .3; }
 .sd-pad .erase { background: #b5a899; font-size: .85rem; }
 .sd-win { text-align: center; font-weight: 800; font-size: 1.2rem; background: #ffe08a; border-radius: 8px; padding: 10px; }
-.s16 .sd-pad .erase { grid-column: span 4; }
-.s16 .sd-pad .memo { grid-column: span 4; }
+.s16 .sd-pad .memo { grid-column: span 3; }
+.s16 .sd-pad .erase { grid-column: span 2; }
+.s16 .sd-pad .hintbtn { grid-column: span 3; }
 
 /* 스도쿠 메모 */
 .notes { display: grid; width: 100%; height: 100%; padding: 1px; font-size: .5rem; line-height: 1; font-weight: 600; color: #6b645d; }
@@ -66,3 +67,7 @@ button { font: inherit; border: 0; border-radius: 8px; padding: 10px 16px; backg
 .cage.cl { border-left-width: 1px; } .cage.cr { border-right-width: 1px; }
 .csum { position: absolute; top: 3px; left: 4px; font-size: .55rem; line-height: 1; font-weight: 700; color: #5b544d; pointer-events: none; background: inherit; padding-right: 1px; }
 .killer .notes { padding-top: .75rem; }
+
+/* 힌트 */
+.sd-pad .hintbtn { grid-column: span 2; background: #4f9a6a; font-size: .85rem; }
+.sd-cell.hinted { color: #2f8f55; }
