@@ -34,6 +34,7 @@ export default function Sudoku({ killer = false }: { killer?: boolean }) {
   const [sel, setSel] = useState<number | null>(null)
   const [notes, setNotes] = useState<number[]>([]) // 칸마다 후보 숫자 비트마스크
   const [memo, setMemo] = useState(false)
+  const [autoClear, setAutoClear] = useState(false) // 숫자를 넣을 때 같은 줄/열/박스의 메모를 자동으로 지울지
   const [hinted, setHinted] = useState<boolean[]>([])
   const [hintCount, setHintCount] = useState(0)
   const [secs, setSecs] = useState(0)
@@ -82,10 +83,10 @@ export default function Sudoku({ killer = false }: { killer?: boolean }) {
       return
     }
     setValues((prev) => prev.map((x, i) => (i === sel ? v : x)))
-    // 확정한 칸의 메모는 비우고, 같은 줄/열/박스의 같은 숫자 메모는 지운다
+    // 확정한 칸의 메모는 비우고, 자동 정리가 켜져 있으면 같은 줄/열/박스의 같은 숫자 메모도 지운다
     setNotes((prev) => prev.map((m, i) =>
-      i === sel ? 0 : peerOf(sel, i, n, box) ? m & ~(1 << (v - 1)) : m))
-  }, [game, sel, solved, memo, values, hinted, n, box])
+      i === sel ? 0 : autoClear && peerOf(sel, i, n, box) ? m & ~(1 << (v - 1)) : m))
+  }, [game, sel, solved, memo, values, hinted, autoClear, n, box])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -122,7 +123,7 @@ export default function Sudoku({ killer = false }: { killer?: boolean }) {
     const v = game.solution[target]
     setValues((prev) => prev.map((x, i) => (i === target ? v : x)))
     setNotes((prev) => prev.map((m, i) =>
-      i === target ? 0 : peerOf(target, i, n, box) ? m & ~(1 << (v - 1)) : m))
+      i === target ? 0 : autoClear && peerOf(target, i, n, box) ? m & ~(1 << (v - 1)) : m))
     setHinted((prev) => prev.map((h, i) => h || i === target))
     setHintCount((c) => c + 1)
     setSel(target)
@@ -229,8 +230,11 @@ export default function Sudoku({ killer = false }: { killer?: boolean }) {
         <button className="erase" onClick={() => input(0)}>지우기</button>
         <button className="hintbtn" onClick={hint}>💡 힌트{hintCount ? ` (${hintCount})` : ''}</button>
       </div>
+      <button className={`autoclear ${autoClear ? 'on' : ''}`} onClick={() => setAutoClear((a) => !a)}>
+        메모 자동 정리 {autoClear ? 'ON' : 'OFF'}
+      </button>
       <p className="hint build">빌드 {__BUILD__}</p>
-      <p className="hint">칸을 누르고 숫자를 고르세요. 메모 ON이면 후보 숫자를 작게 적어요. 틀린 숫자는 빨간색으로 표시돼요.</p>
+      <p className="hint">칸을 누르고 숫자를 고르세요. 메모 ON이면 후보 숫자를 작게 적어요. 메모 자동 정리를 켜면 숫자를 넣을 때 같은 줄·열·박스의 같은 숫자 메모가 지워져요. 틀린 숫자는 빨간색으로 표시돼요.</p>
     </div>
   )
 }
