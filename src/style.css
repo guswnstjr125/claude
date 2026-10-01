@@ -1,0 +1,23 @@
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: #faf8ef; color: #776e65; font-family: system-ui, -apple-system, sans-serif; }
+.page { max-width: 480px; margin: 0 auto; padding: 16px; }
+h1 { font-size: 1.6rem; text-align: center; }
+button { font: inherit; border: 0; border-radius: 8px; padding: 10px 16px; background: #8f7a66; color: #fff; font-weight: 700; cursor: pointer; }
+.back { background: transparent; color: #776e65; padding: 4px 0; }
+.menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 24px 8px; font-size: 1.1rem; }
+.emoji { font-size: 2.4rem; }
+.scores { display: flex; gap: 8px; align-items: stretch; margin-bottom: 12px; }
+.score { flex: 1; background: #bbada0; color: #eee4da; border-radius: 8px; padding: 6px 10px; font-size: .75rem; text-align: center; }
+.score b { display: block; font-size: 1.2rem; color: #fff; }
+.board { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 8px; background: #bbada0; border-radius: 10px; touch-action: none; user-select: none; aspect-ratio: 1; }
+.tile { display: flex; align-items: center; justify-content: center; border-radius: 6px; background: #cdc1b4; font-weight: 800; font-size: clamp(1.2rem, 7vw, 2rem); }
+.t2 { background: #eee4da; } .t4 { background: #ede0c8; }
+.t8 { background: #f2b179; color: #fff; } .t16 { background: #f59563; color: #fff; }
+.t32 { background: #f67c5f; color: #fff; } .t64 { background: #f65e3b; color: #fff; }
+.t128 { background: #edcf72; color: #fff; } .t256 { background: #edcc61; color: #fff; }
+.t512 { background: #edc850; color: #fff; } .t1024 { background: #edc53f; color: #fff; font-size: 1.4rem; }
+.t2048, .tbig { background: #edc22e; color: #fff; font-size: 1.4rem; }
+.overlay { position: absolute; inset: 0; border-radius: 10px; background: rgba(238, 228, 218, .8); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-size: 1.6rem; font-weight: 800; }
+.overlay p { margin: 0; }
+.hint { text-align: center; font-size: .8rem; opacity: .7; }
